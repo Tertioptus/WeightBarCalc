@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sample page: Prafet</title>
+<style>
+    body {
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+	        @font-face {
+            font-family: "Atlassian Icons";
+            src: url(http://aui-cdn.atlassian.com/aui-adg/5.9.6/css/fonts/atlassian-icons.eot);
+            src: url(http://aui-cdn.atlassian.com/aui-adg/5.9.6/css/fonts/atlassian-icons.eot?#iefix) format("embedded-opentype"), url(http://aui-cdn.atlassian.com/aui-adg/5.9.6/css/fonts/atlassian-icons.woff) format("woff"), url(http://aui-cdn.atlassian.com/aui-adg/5.9.6/css/fonts/atlassian-icons.ttf) format("truetype"), url(http://aui-cdn.atlassian.com/aui-adg/5.9.6/css/fonts/atlassian-icons.svg#atlassian-icons) format("svg");
+            font-weight: normal;
+            font-style: normal;
+        }
+        circle:hover, rect:hover + circle, circle.commitHover {
+            r: 5;
+            fill: black;
+            stroke: black;
+            stroke-width: 3;
+        }
+</style>
+</head>
+<body>
+<script>
+	var platePairs = [2.5,5,5,10,25,35,45];
+	var bar = 45;
+	var map = [];
+	map[2.5] = 2.5;
+	map[5] = 4;
+	map[10] = 6;
+	map[25] = 8;
+	map[35] = 10;
+	map[45] = 12;
+	function platePairAggregator(platePairs) {
+		let platePairSum = bar;
+		
+		function add(value) {
+			platePairSum += value*2;
+		}
+		platePairs.forEach(add);
+		return platePairSum;
+	}
+	function possibleFieldGenerator(platePairSum) {
+		//create all the numbers from 45 to plate pair sum
+		let field = [];
+		for (weight=bar; weight<=platePairSum; weight+=5) {
+			field.push(weight);
+		}
+		return field;
+	}
+	function weightSetter(weightRequest) {
+		//consider base weight and then all combinations of children, plus bar until match is found
+		document.write('<div>');
+		for(let i=0;i<weightRequest.platePairs.length;i++) {
+			let selectedPlate = weightRequest.platePairs[i];
+			if(selectedPlate<=0 || (weightRequest.rack.length > 0 && selectedPlate <  weightRequest.rack[weightRequest.rack.length-1])) continue;
+			let rack = [...weightRequest.rack];
+			rack.push(selectedPlate);
+			let total = platePairAggregator(rack);
+			let weight = weightRequest.weight;
+			if(total == weight) {
+				document.write('<div>For weight:' + weight + ' , rack:' + rack+ '</div>');
+				function printWeight(val) {
+					let value = map[val];
+					let r = value * 8;
+					let stroke_width = 5;
+					let cx = value * 10;
+					let cy = value * 10;
+					let height = value * 20;
+					let width = value * 20;	
+					document.write('<svg height="'+ height +'" width="' + width + '">');
+					document.write('<circle cx="' + cx +'" cy="' + cy + '" r="' + r + '" stroke="black" stroke-width="' + stroke_width + '" fill="white" />');
+					document.write('<text x="50%" y="50%" text-anchor="middle" font-size="20px" stroke="black" stroke-width="2px" dy=".3em">' + val + '</text>');					
+					document.write('</svg>');
+				}
+				rack.forEach(printWeight);
+				break;
+			}
+			if(total < weight) {
+				let platePairSubset =  [...weightRequest.platePairs];
+				platePairSubset[i] = -1;
+				let weightRequestSubset =
+				{
+					weight: weight,
+					platePairs: platePairSubset,
+					rack: rack
+				}
+				weightSetter(weightRequestSubset);
+			}
+			if(total > weight) break;
+		}
+		document.write('</div>');
+	}
+	function requestManager(weight) {
+		if(weight > bar) {
+			//Create weight request	
+			let weightRequest = {weight: weight, platePairs: platePairs, rack: []};
+			weightSetter(weightRequest);
+		}
+	}
+	function userListener(possibleFieldBase5) {
+		//For each weight in the field, create a weight request for a RequestManageer
+		possibleFieldBase5.forEach(requestManager);
+	}
+	function appStart() {
+		userListener(possibleFieldGenerator(platePairAggregator(platePairs)));
+	}
+</script>
+	<div id="header">Solt (Press)</div>
+	<div id="navigation" style="float:left">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="144" height="813" text-rendering="optimizeLegibility" style="border: 0px; margin: 0px; padding: 0;" id="bit-booster"></svg>
+	</div>
+	<div id="content">
+		<button type="button"
+onclick="appStart()">
+Click me to display Date and Time.</button>
+
+		<h1>Prafet Manual</h1>
+		<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc nec dui nisl. Curabitur mollis nec neque id auctor. Nulla ac leo hendrerit, semper enim commodo, elementum nibh. Praesent ultricies interdum tincidunt. Mauris auctor fermentum suscipit. Aenean tincidunt ex eu magna porta, eget accumsan elit blandit. Nullam tincidunt metus nec nisl dictum ultricies. Nunc eu maximus justo. In nibh justo, gravida a convallis sit amet, mollis efficitur risus. Ut dictum eleifend ante porta lacinia. Sed in pretium nibh. Ut semper sem magna, sit amet iaculis dui interdum vitae. Duis fermentum ipsum vitae facilisis feugiat. Pellentesque eu ullamcorper nisl.</p>
+	</div>
+</body>
+</html>
